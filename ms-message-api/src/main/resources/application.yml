@@ -1,0 +1,21 @@
+---
+logging.level.com.syscom: INFO
+logging.pattern.console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+logging.pattern.file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+management.endpoints.web.base-path: /manage
+management.security.enabled: false
+server.port: 8080
+spring.application.name: ms-message
+spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+spring.jackson.serialization.write-dates-as-timestamps: false
+spring.datasource.driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+spring.datasource.platform: postgres
+spring.datasource.type: com.zaxxer.hikari.HikariDataSource
+spring.datasource.url: jdbc:p6spy:postgresql://localhost:5432/ms_message
+spring.datasource.username: ms_message
+spring.datasource.password: ms_message
+spring.jpa.database: POSTGRESQL
+spring.jpa.show-sql: true
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
+token.jwt.duration: 600
+token.jwt.secret: 4pE8z3PBoHjnV1AhvGk+e8h2p+ShZpOnpr8cwHmMh1w=
