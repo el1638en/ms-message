@@ -19,6 +19,7 @@ import com.syscom.beans.Token;
 import com.syscom.beans.User;
 import com.syscom.exceptions.BusinessException;
 import com.syscom.repository.UserRepository;
+import com.syscom.service.ResourceBundleService;
 import com.syscom.service.TokenService;
 import com.syscom.utils.DateUtils;
 
@@ -44,6 +45,9 @@ public class TokenServiceImpl implements TokenService {
 	private static final String NAME = "NAME";
 
 	@Autowired
+	private ResourceBundleService resourceBundleService;
+
+	@Autowired
 	private UserRepository userRepository;
 
 	@Value("${token.jwt.secret}")
@@ -54,13 +58,13 @@ public class TokenServiceImpl implements TokenService {
 
 	@Override
 	public Token retrieveToken(String tokenValue) {
-		Assert.notNull(tokenValue, "Token must not be null");
+		Assert.notNull(tokenValue, resourceBundleService.getMessage("token.empty"));
 		return checkToken(tokenValue);
 	}
 
 	@Override
 	public Token createToken(String mail) throws BusinessException {
-		Assert.notNull(mail, "Mail must not be null");
+		Assert.notNull(mail, resourceBundleService.getMessage("token.mail.empty"));
 		Optional<User> optionalUser = userRepository.findOptionalByMail(mail);
 		if (!optionalUser.isPresent()) {
 			throw new BusinessException("Unknown user");

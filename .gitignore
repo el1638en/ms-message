@@ -11,6 +11,9 @@ local.properties
 .loadpath
 .recommenders
 
+*.log
+*.attach*
+
 # External tool builders
 .externalToolBuilders/
 
@@ -51,7 +54,7 @@ local.properties
 .worksheet
 
 
-
+.mvn/
 
 #
 # Default excludes

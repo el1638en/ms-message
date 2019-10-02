@@ -3,7 +3,6 @@ package com.syscom.mapper;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
 import com.syscom.beans.Fonction;
@@ -12,7 +11,6 @@ import com.syscom.dto.FonctionDTO;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface FonctionMapper {
 
-	@Mappings({})
 	FonctionDTO beanToDto(Fonction fonction);
 
 	@InheritInverseConfiguration

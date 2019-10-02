@@ -14,7 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.syscom.beans.User;
 import com.syscom.exceptions.BusinessException;
+import com.syscom.repository.RoleRepository;
 import com.syscom.repository.UserRepository;
+import com.syscom.service.ResourceBundleService;
 import com.syscom.service.impl.UserServiceImpl;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -24,7 +26,13 @@ public class UserServiceTest {
 	private UserRepository userRepository;
 
 	@Mock
+	private RoleRepository roleRepository;
+
+	@Mock
 	private PasswordEncoder passwordEncoder;
+
+	@Mock
+	private ResourceBundleService resourceBundleService;
 
 	@InjectMocks
 	private UserServiceImpl userService;
@@ -92,6 +100,7 @@ public class UserServiceTest {
 
 		// THEN
 		verify(userRepository, times(1)).save(user);
+		verify(roleRepository, times(1)).findByCode("USERS");
 	}
 
 }
