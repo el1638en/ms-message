@@ -32,8 +32,7 @@ ne sont accessibles qu'aux clients disposant de tokens valides et des droits les
 
 Pour générer l'mage Docker de l'API, nous utilisons le plugin [Google JIB (Build Java
 Docker Images Better)](https://cloudplatform.googleblog.com/2018/07/introducing-jib-build-java-docker-images-better.html). Il existe d'autres outils de build comme [Fabric8](https://maven.fabric8.io/) ou [Spotify](https://github.com/spotify/docker-maven-plugin).
-L'intérêt de Google JIB est sa simplicité d'utilisation (pas besoin de Dockerfile,
-). La création de l'image est gérée full Java par le plugin. Voici la configuration
+L'intérêt de Google JIB est sa simplicité d'utilisation (pas besoin de Dockerfile). La création de l'image est gérée full Java par le plugin. Voici la configuration
 ajoutée dans le fichier pom.xml :
 
 ```xml
