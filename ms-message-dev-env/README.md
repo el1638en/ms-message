@@ -59,9 +59,15 @@ Le fichier de configuration `docker-compose.yml` contient la description du serv
         container_name: ms-postgres
         ports:
           - "5432:5432"
+        healthcheck:
+	       test: ["CMD-SHELL", "pg_isready -U postgres"]
+	       interval: 10s
+	       timeout: 5s
+	       retries: 5
   ```
 
 `docker-compose` va créer le service `ms-postgres`. Ce service va lancer le container `ms-postgres` en utilisant l'image `ms-postgres` que nous avons créée précédemment.
+(documentation [Healthcheck](https://docs.docker.com/engine/reference/builder/#healthcheck))
 
 Pour :
   - lancer le service :
