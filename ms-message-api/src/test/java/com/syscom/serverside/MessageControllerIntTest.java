@@ -1,5 +1,6 @@
 package com.syscom.serverside;
 
+import static com.syscom.enums.EnumRole.USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,7 +43,7 @@ public class MessageControllerIntTest extends AbstractIntTest {
 
 	@Before
 	public void setup() {
-		Role role = roleRepository.findByCode("USERS");
+		Role role = roleRepository.findByCode(USERS.name());
 		user = User.builder().mail(MAIL).password(PASSWORD).name(NAME).firstName(FIRST_NAME).birthDay(BIRTH_DAY)
 				.role(role).build();
 

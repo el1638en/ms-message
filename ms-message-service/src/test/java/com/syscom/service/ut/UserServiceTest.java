@@ -1,5 +1,6 @@
 package com.syscom.service.ut;
 
+import static com.syscom.enums.EnumRole.USERS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -100,7 +101,7 @@ public class UserServiceTest {
 
 		// THEN
 		verify(userRepository, times(1)).save(user);
-		verify(roleRepository, times(1)).findByCode("USERS");
+		verify(roleRepository, times(1)).findByCode(USERS.name());
 	}
 
 }
