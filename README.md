@@ -25,11 +25,11 @@ Pour tester les APIs, nous utilisons des tests d'intégration qui permettent de 
 Pour démarrer un test d'intégration, les annotations ci-dessous sont utilisées :
 
 ```java
-	 @Transactional
-	 @RunWith(SpringRunner.class)
-	 @SpringBootTest(classes = MessageApp.class)
-	 @AutoConfigureMockMvc
-	 @TestPropertySource(locations ="classpath:application-test.yml")
+ @Transactional
+ @RunWith(SpringRunner.class)
+ @SpringBootTest(classes = MessageApp.class)
+ @AutoConfigureMockMvc
+ @TestPropertySource(locations ="classpath:application-test.yml")
 ```
 
 Quelques explications sur les annotations utilisées :
