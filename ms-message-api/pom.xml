@@ -49,6 +49,10 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 
 
@@ -103,14 +107,8 @@
 						<image>openjdk:8-jdk-alpine</image>
 					</from>
 					<!-- TODO : indiquer ici l'adresse du repo Nexus -->
-					<!-- 
-						<to>
-							<image>${repo.nexus.adresse}</image>
-							<tags>
-								<tag>${project.artifactId}-${project.version}</tag>
-							</tags>
-						</to> 
-					-->
+					<!-- <to> <image>${repo.nexus.adresse}</image> <tags> <tag>${project.artifactId}-${project.version}</tag> 
+						</tags> </to> -->
 					<container>
 						<args>
 							<arg>-Djava.security.egd=file:/dev/./urandom</arg>

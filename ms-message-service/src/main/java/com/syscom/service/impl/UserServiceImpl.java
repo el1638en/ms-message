@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.syscom.beans.User;
+import com.syscom.enums.EnumRole;
 import com.syscom.exceptions.BusinessException;
 import com.syscom.repository.RoleRepository;
 import com.syscom.repository.UserRepository;
@@ -62,8 +63,8 @@ public class UserServiceImpl implements UserService {
 			throw new BusinessException(resourceBundleService.getMessage("user.mail.already.used"));
 		}
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		user.setRole(roleRepository.findByCode("USERS"));
-		user = userRepository.save(user);
+		user.setRole(roleRepository.findByCode(EnumRole.USERS.name()));
+		userRepository.save(user);
 	}
 
 	/**
@@ -73,8 +74,6 @@ public class UserServiceImpl implements UserService {
 	 * @return Liste de message d'erreurs
 	 */
 	private List<String> validateUser(User user) {
-//		ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-//		Validator validator = validatorFactory.getValidator();
 		Set<ConstraintViolation<User>> constraintViolations = validatorFactory.getValidator().validate(user);
 		if (CollectionUtils.isNotEmpty(constraintViolations)) {
 			return constraintViolations.stream()

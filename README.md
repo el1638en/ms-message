@@ -2,24 +2,240 @@
 
 Spring Boot est un framework Spring qui permet de simplifier le démarrage des applications Web
 avec une meilleure gestion des configurations (plus besoin des nombreux fichiers XML de configuration, etc...).
-Dans ce cas pratique, nous utilisons Spring Boot pour produire une API Backend Spring Rest.
+Dans ce cas pratique, nous utilisons Spring Boot pour produire une API REST.
 
-  1. Le façade Web (module maven ms-message-api)
+  1. Le façade Web
 
-  Le façade Web est la partie accessible aux clients de l'API. Elle expose les APIs REST.
-  Elle utilise les beans service  de la couche métier.Les API REST sont construits avec le framework
-[Spring REST](https://projects.spring.io/spring-restdocs/ "link to Spring REST").
-  On retrouve l'utilisation des annotations `@RestController`, `@RequestMapping`, `@RequestParam` pour construire les façades REST
+Le façade Web expose les données via des APIs REST. Elle est la partie accessible aux clients de l'API. 
+Toutes les APIs sont disponibles dans le module `ms-message-api.`
+Pour construire une API, on utilise les annotations Spring telles que : 
+    * `@RestController` : elle permet à Spring d'identifier la classe portant cette 
+      annotation comme étant un contrôleur REST et la liste des requêtes qu'elle est 
+      capable d'enregistrer.
+    * `@RequestMapping` : ajoutée sur une méthode, elle indique la méthode à appeler pour traiter une URI 
+      précise.
+    * `@RequestParam` : elle permet de gérer les paramètres présentes dans une requêtes 
+      HTTP. Les paramètres sont au format (field1=value1&field2=value2=field3=value3)
 
-  Pour gérer la sécurité des APIs, nous utilisons :
-* une authentification par Token : Il s'agit d'une authentification de type Basic avec un login:Mot de passe en Base64.
-Si les credentials sont connus, un token de connexion est fournis par l'API. Ce token sera rajouté aux headers des requêtes vers les APIs.
-* [Spring Security](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/ "link to Spring Security") : En utilisant l'annotation `@Secured`, les APIs sécurisés
-ne sont accessibles qu'aux clients disposant de tokens valides et des droits les autorisant à les exploiter.
+La documentation sur les API REST sont disponibles [ici](https://projects.spring.io/spring-restdocs/ "link to Spring REST").
+Pour sécuriser APIs, nous utilisons :
+    * une authentification par Token : Il s'agit d'une authentification de type Basic avec un login:Mot de passe en Base64.
+    Si les credentials sont connus, un token est fourni par l'API. Le client doit ajouter 
+    ce  token aux headers de ses requêtes.
+    * [Spring Security](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/ "link to Spring Security") : En utilisant l'annotation `@Secured`, les APIs sécurisés
+    ne sont accessibles qu'aux clients disposant de tokens valides et des droits les autorisant à les exploiter.
 
-2. Les services et les accès à la bdd (module maven ms-message-service)
+Pour tester les APIs, nous utilisons des tests d'intégration qui permettent de tester non seulement les APIs mais aussi les couches de service et les repository.
 
-    - La couche métier (package `com.syscom.service` et `com.syscom.service.impl`) : contient les contrats d'interface et l'inplémentation des services métiers. Elle est disponible dans le module ms-message-service. Pour consulter/modifier des données en BDD, elle s'appuie sur les repositories de la couche DAO.
+Pour démarrer un test d'intégration, les annotations ci-dessous sont utilisées : 
+
+	```java
+	 @Transactional
+	 @RunWith(SpringRunner.class)
+	 @SpringBootTest(classes = MessageApp.class)
+	 @AutoConfigureMockMvc
+	 @TestPropertySource(locations = "classpath:application-test.yml")
+	```
+
+Quelques explications sur les annotations utilisées
+
+    * `@SpringBootTest` : cette annotation a pour but de démarrer le serveur d'application 
+      à partir de la classe principale `MessageApp.class`,
+    * `@AutoConfigureMockMvc` : cette annotation permet de gérer la configuration 
+       automatique `MockMvc`.
+    * `@TestPropertySource(locations = "classpath:application-test.yml")` : cette annotation 
+      va charger dans le fichier `application-test.yml` toutes les informations 
+      nécessaires au déroulement des tests d'intégration. Par exemple, ce fichier contient l'adresse 
+      de la bdd Postgres de test. En effet, au lieu d'utiliser la bdd H2 embarquée, 
+      il est mieux d'utiliser une réelle bdd pour tester l'application dans des conditions 
+      réelles. Voici un aperçu de ce fichier de configuration :
+
+
+    ```
+	    spring.flyway.schemas: test_ms_message_tests
+	    logging.level.com.syscom: INFO
+		spring.jpa.database: POSTGRESQL
+		spring.jpa.properties.hibernate.default_schema: test_ms_message_tests
+		spring.datasource.driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+		spring.datasource.platform: postgres
+		spring.datasource.type: com.zaxxer.hikari.HikariDataSource
+		spring.datasource.url: jdbc:p6spy:postgresql://localhost:5432/ms_message_tests
+		spring.datasource.username: ms_message_tests
+		spring.datasource.password: ms_message_tests
+		spring.datasource.maxpoolsize: 3
+		logging.level.root: INFOe module contient la configuration des bdd locales pour démarrer le projet. 
+		logging.level.com.zaxxer: INFO
+		token.jwt.duration: 600
+		token.jwt.secret: 4pE8z3PBoHjnV1AhvGk+e8h2p+ShZpOnpr8cwHmMh1w=
+    ```
+
+    Voici les tests d'intégration pour les services CRUD de messages.
+
+    ```java
+        
+        package com.syscom.serverside;
+
+	    import static com.syscom.TestUtil.APPLICATION_JSON_UTF8;
+	    import static com.syscom.TestUtil.convertObjectToJsonBytes;
+	    import static com.syscom.enums.EnumRole.USERS;
+	    import static org.assertj.core.api.Assertions.assertThat;
+	    import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+	    import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+			
+		import java.time.LocalDate;
+
+	    import org.junit.Before;
+	    import org.junit.Test;
+	    import org.springframework.beans.factory.annotation.Autowired;
+	    import org.springframework.http.HttpHeaders;
+	    import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+        import com.syscom.beans.Message;
+        import com.syscom.beans.Role;
+        import com.syscom.beans.User;
+        import com.syscom.dto.MessageDTO;
+        import com.syscom.repository.RoleRepository;
+        import com.syscom.rest.MessageController;
+        import com.syscom.service.MessageService;
+        import com.syscom.service.UserService;
+
+        public class MessageControllerIntTest extends AbstractIntTest {
+
+            private static final String TITLE = "TITLE";
+            private static final String CONTENT = "CONTENT";
+            private static final LocalDate BEGIN_DATE = LocalDate.now();
+            private static final LocalDate END_DATE = LocalDate.now().plusDays(1);
+
+            @Autowired
+            private RoleRepository roleRepository;
+
+            @Autowired
+            private UserService userService;
+
+            @Autowired
+            private MessageService messageService;
+
+            private User user;
+
+            @Before
+            public void setup() throws Exception {
+                Role role = roleRepository.findByCode(USERS.name());
+                user = User.builder().mail(MAIL).password(PASSWORD).name(NAME).firstName(FIRST_NAME).birthDay(BIRTH_DAY)
+                .role(role).build();
+                userService.create(user);
+            }
+
+            @Test
+            public void testCreateMessageWithoutValidToken() throws Exception {
+                // GIVEN
+                MessageDTO messageDTO = MessageDTO.builder().title(TITLE).content(CONTENT).beginDate(BEGIN_DATE)
+                .endDate(END_DATE).build();
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH).contentType(APPLICATION_JSON_UTF8)
+                .content(convertObjectToJsonBytes(messageDTO))).andExpect(status().isUnauthorized());
+            }
+
+            @Test
+            public void testCreateMessageWithWrongToken() throws Exception {
+                // GIVEN
+                MessageDTO messageDTO = MessageDTO.builder().title(TITLE).content(CONTENT).beginDate(BEGIN_DATE)
+                .endDate(END_DATE).build();
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer wrongTokendcqscsqcqsvsdvsdfv")
+                .contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
+                .andExpect(status().isUnauthorized());e module contient la configuration des bdd locales pour démarrer le projet. 
+            }
+
+            @Test
+            public void testCreateWrongMessage() throws Exception {
+                // GIVEN
+                MessageDTO messageDTO = new MessageDTO();
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
+                .contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
+                .andExpect(status().isBadRequest());
+            }
+
+            @Test
+            public void messageServicetestCreateMessage() the module contient la configuration des bdd locales pour démarrer le projet. rows Exception {
+                // GIVEN
+                MessageDTO messageDTO = MessageDTO.builder().title(TITLE).content(CONTENT).beginDate(BEGIN_DATE)
+                .endDate(END_DATE).build();
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
+                .contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
+                .andExpect(status().isOk());
+            }
+
+            @Test
+            public void testFindAllMessages() throws Exception {
+                // GIVEN
+                messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.get(MessageController.PATH).header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + getAccessToken(MAIL, PASSWORD))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$.[0].title").value(TITLE))
+                .andExpect(jsonPath("$.[0].content").value(CONTENT));
+            }
+
+            @Test
+            public void testFindMessageById() throws Exception {
+                // GIVEN
+                Message message = messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.get(MessageController.PATH + "/" + message.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.title").value(TITLE))
+                .andExpect(jsonPath("$.content").value(CONTENT));
+            }
+
+
+            @Test
+            public void testDeleteMessage() throws Exception {
+                // GIVEN
+                Message message = messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
+
+                // WHEN
+
+                // THEN
+                mockMvc.perform(MockMvcRequestBuilders.delete(MessageController.PATH + "/" + message.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
+                .contentType(APPLICATION_JSON_UTF8)).andExpect(status().isOk());
+
+                assertThat(messageService.findAll().size()).isEqualTo(0);
+            }
+
+        }
+    ```
+
+
+  2. Le module `ms-message-service`
+
+Les APIs REST utilisent le module `ms-message-service` qui s'occupe du traiment des données.  Il contient :
+    
+    - La couche métier (package `com.syscom.service` et `com.syscom.service.impl`) : contient les contrats d'interface et l'inplémentation des services métiers.
+      Pour consulter/modifier des données en BDD, elle s'appuie sur les repositories de la couche DAO.
 
     - La couche DAO (package `com.syscom.repository`). Elle est composée des interfaces Spring Data qui permettent d'effectuer des requêtes sur la BDD.
 
@@ -28,7 +244,16 @@ ne sont accessibles qu'aux clients disposant de tokens valides et des droits les
     - Le versionning des scripts SQL : le versionning des scripts SQL est géré par le framework [flywaydb](https://flywaydb.org "link to flyway").
 
 
-3. Build de l'image Docker de l'API
+  3. `ms-message-dev-env` 
+
+Pour démarrer rapidement le projet localement, nous utilisons [Docker-compose](https://docs.docker.com/compose/ "link to Docker-compose").
+Le fichier `docker-compose.yml` contient la configuration pour démarrer les bases de données.
+
+Par ailleurs, ce module contient un fichier `postegresql/Dockerfile` qui, à partir  de l'image officielle de PostgreSQL, crée 2 bases de données (1 bdd pour le dev 
+et 1 bdd pour les tests). Pour plus de détails, consulter le fichier README.md.
+    
+     
+  4. Build de l'image Docker de l'API
 
 Pour générer l'mage Docker de l'API, nous utilisons le plugin [Google JIB (Build Java
 Docker Images Better)](https://cloudplatform.googleblog.com/2018/07/introducing-jib-build-java-docker-images-better.html). Il existe d'autres outils de build comme [Fabric8](https://maven.fabric8.io/) ou [Spotify](https://github.com/spotify/docker-maven-plugin).

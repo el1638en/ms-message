@@ -55,6 +55,12 @@
 		<commons-collections4.version>4.4</commons-collections4.version>
 		<jib-maven-plugin.version>1.6.1</jib-maven-plugin.version>
 		<jacoco.version>0.8.4</jacoco.version>
+		<sonar-maven-plugin.verson>3.7.0.1746</sonar-maven-plugin.verson>
+		<sonar.coverage.exclusions>
+			**/beans/**/*,
+			**/enums/**/*,
+			**/dto/*
+		</sonar.coverage.exclusions>
 		<sonar.coverage.exclusions>
 			**/beans/**/*.java
 		</sonar.coverage.exclusions>
@@ -110,12 +116,45 @@
 				<artifactId>javax.el</artifactId>
 				<version>${javax-el.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+			</dependency>
 		</dependencies>
 
 	</dependencyManagement>
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>${sonar-maven-plugin.verson}</version>
+			</plugin>
+
 			<!-- Maven Release plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
