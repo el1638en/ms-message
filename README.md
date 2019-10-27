@@ -6,73 +6,62 @@ Dans ce cas pratique, nous utilisons Spring Boot pour produire une API REST.
 
   1. Le façade Web
 
-Le façade Web expose les données via des APIs REST. Elle est la partie accessible aux clients de l'API. 
+Le façade Web expose les données via des APIs REST. Elle est la partie accessible aux clients de l'API.
 Toutes les APIs sont disponibles dans le module `ms-message-api.`
-Pour construire une API, on utilise les annotations Spring telles que : 
-    * `@RestController` : elle permet à Spring d'identifier la classe portant cette 
-      annotation comme étant un contrôleur REST et la liste des requêtes qu'elle est 
-      capable d'enregistrer.
-    * `@RequestMapping` : ajoutée sur une méthode, elle indique la méthode à appeler pour traiter une URI 
-      précise.
-    * `@RequestParam` : elle permet de gérer les paramètres présentes dans une requêtes 
-      HTTP. Les paramètres sont au format (field1=value1&field2=value2=field3=value3)
+Pour construire une API, on utilise les annotations Spring telles que :
 
-La documentation sur les API REST sont disponibles [ici](https://projects.spring.io/spring-restdocs/ "link to Spring REST").
+* `@RestController` : elle permet à Spring d'identifier la classe portant cette annotation comme étant un contrôleur REST et la liste des requêtes qu'elle est capable d'enregistrer.
+* `@RequestMapping` : ajoutée sur une méthode, elle indique la méthode à appeler pour traiter une URI précise.
+* `@RequestParam` : elle permet de gérer les paramètres présentes dans une requêtes HTTP. Les paramètres sont au format (field1=value1&field2=value2=field3=value3)
+
+La documentation sur les API REST est disponible [ici](https://projects.spring.io/spring-restdocs/ "link to Spring REST").
+
 Pour sécuriser APIs, nous utilisons :
-    * une authentification par Token : Il s'agit d'une authentification de type Basic avec un login:Mot de passe en Base64.
-    Si les credentials sont connus, un token est fourni par l'API. Le client doit ajouter 
-    ce  token aux headers de ses requêtes.
-    * [Spring Security](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/ "link to Spring Security") : En utilisant l'annotation `@Secured`, les APIs sécurisés
-    ne sont accessibles qu'aux clients disposant de tokens valides et des droits les autorisant à les exploiter.
+* une authentification par Token : Il s'agit d'une authentification de type Basic avec un login:Mot de passe en Base64. Si les credentials sont connus, un token est fourni par l'API. Le client doit ajouter ce  token aux headers de ses requêtes.
+* [Spring Security](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/ "link to Spring Security") : En utilisant l'annotation `@Secured`, les APIs sécurisés ne sont accessibles qu'aux clients disposant de tokens valides et des droits les autorisant à les exploiter.
 
 Pour tester les APIs, nous utilisons des tests d'intégration qui permettent de tester non seulement les APIs mais aussi les couches de service et les repository.
 
-Pour démarrer un test d'intégration, les annotations ci-dessous sont utilisées : 
+Pour démarrer un test d'intégration, les annotations ci-dessous sont utilisées :
 
-	```java
+```java
 	 @Transactional
 	 @RunWith(SpringRunner.class)
 	 @SpringBootTest(classes = MessageApp.class)
 	 @AutoConfigureMockMvc
-	 @TestPropertySource(locations = "classpath:application-test.yml")
-	```
+	 @TestPropertySource(locations ="classpath:application-test.yml")
+```
 
-Quelques explications sur les annotations utilisées
+Quelques explications sur les annotations utilisées :
 
-    * `@SpringBootTest` : cette annotation a pour but de démarrer le serveur d'application 
-      à partir de la classe principale `MessageApp.class`,
-    * `@AutoConfigureMockMvc` : cette annotation permet de gérer la configuration 
-       automatique `MockMvc`.
-    * `@TestPropertySource(locations = "classpath:application-test.yml")` : cette annotation 
-      va charger dans le fichier `application-test.yml` toutes les informations 
-      nécessaires au déroulement des tests d'intégration. Par exemple, ce fichier contient l'adresse 
-      de la bdd Postgres de test. En effet, au lieu d'utiliser la bdd H2 embarquée, 
-      il est mieux d'utiliser une réelle bdd pour tester l'application dans des conditions 
-      réelles. Voici un aperçu de ce fichier de configuration :
+* `@SpringBootTest` : cette annotation a pour but de démarrer le serveur d'application à partir de la classe principale `MessageApp.class`,
+* `@AutoConfigureMockMvc` : cette annotation permet de gérer la configuration automatique `MockMvc`.
+* `@TestPropertySource(locations ="classpath:application-test.yml")` : cette annotation charge dans le fichier `application-test.yml` les informations
+nécessaires au déroulement des tests d'intégration. Par exemple, ce fichier contient l'adresse de la bdd Postgres de test. Au lieu d'utiliser la bdd H2 embarquée, il est mieux d'utiliser une bdd réelle pour tester l'application dans des conditions réelles. Voici un aperçu de ce fichier de configuration :
 
 
-    ```
-	    spring.flyway.schemas: test_ms_message_tests
-	    logging.level.com.syscom: INFO
-		spring.jpa.database: POSTGRESQL
-		spring.jpa.properties.hibernate.default_schema: test_ms_message_tests
-		spring.datasource.driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-		spring.datasource.platform: postgres
-		spring.datasource.type: com.zaxxer.hikari.HikariDataSource
-		spring.datasource.url: jdbc:p6spy:postgresql://localhost:5432/ms_message_tests
-		spring.datasource.username: ms_message_tests
-		spring.datasource.password: ms_message_tests
-		spring.datasource.maxpoolsize: 3
-		logging.level.root: INFOe module contient la configuration des bdd locales pour démarrer le projet. 
-		logging.level.com.zaxxer: INFO
-		token.jwt.duration: 600
-		token.jwt.secret: 4pE8z3PBoHjnV1AhvGk+e8h2p+ShZpOnpr8cwHmMh1w=
-    ```
+  ```yml
+  spring.flyway.schemas: test_ms_message_tests
+  logging.level.com.syscom: INFO
+  spring.jpa.database: POSTGRESQL
+  spring.jpa.properties.hibernate.default_schema: test_ms_message_tests
+  spring.datasource.driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+  spring.datasource.platform: postgres
+  spring.datasource.type: com.zaxxer.hikari.HikariDataSource
+  spring.datasource.url: jdbc:p6spy:postgresql://localhost:5432/ms_message_tests
+  spring.datasource.username: ms_message_tests
+  spring.datasource.password: ms_message_tests
+  spring.datasource.maxpoolsize: 3
+  logging.level.root: INFOe module contient la configuration des bdd locales pour démarrer le projet.
+  logging.level.com.zaxxer: INFO
+  token.jwt.duration: 600
+  token.jwt.secret: 4pE8z3PBoHjnV1AhvGk+e8h2p+ShZpOnpr8cwHmMh1w=
+  ```
 
-    Voici les tests d'intégration pour les services CRUD de messages.
+  Voici les tests d'intégration pour les services CRUD de messages.
 
-    ```java
-        
+```java
+
         package com.syscom.serverside;
 
 	    import static com.syscom.TestUtil.APPLICATION_JSON_UTF8;
@@ -81,7 +70,7 @@ Quelques explications sur les annotations utilisées
 	    import static org.assertj.core.api.Assertions.assertThat;
 	    import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 	    import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-			
+
 		import java.time.LocalDate;
 
 	    import org.junit.Before;
@@ -150,7 +139,7 @@ Quelques explications sur les annotations utilisées
                 mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer wrongTokendcqscsqcqsvsdvsdfv")
                 .contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
-                .andExpect(status().isUnauthorized());e module contient la configuration des bdd locales pour démarrer le projet. 
+                .andExpect(status().isUnauthorized());e module contient la configuration des bdd locales pour démarrer le projet.
             }
 
             @Test
@@ -233,26 +222,26 @@ Quelques explications sur les annotations utilisées
   2. Le module `ms-message-service`
 
 Les APIs REST utilisent le module `ms-message-service` qui s'occupe du traiment des données.  Il contient :
-    
-    - La couche métier (package `com.syscom.service` et `com.syscom.service.impl`) : contient les contrats d'interface et l'inplémentation des services métiers.
+
+  - La couche métier (package `com.syscom.service` et `com.syscom.service.impl`) : contient les contrats d'interface et l'inplémentation des services métiers.
       Pour consulter/modifier des données en BDD, elle s'appuie sur les repositories de la couche DAO.
 
-    - La couche DAO (package `com.syscom.repository`). Elle est composée des interfaces Spring Data qui permettent d'effectuer des requêtes sur la BDD.
+  - La couche DAO (package `com.syscom.repository`). Elle est composée des interfaces Spring Data qui permettent d'effectuer des requêtes sur la BDD.
 
-    - La couche ORM(JPA/Hibernate, package `com.syscom.beans`). Cette couche réalise le mapping entre les objets Java et les tables de la BDD grâce aux annotations JPA (Java Persistence API)
+  - La couche ORM(JPA/Hibernate, package `com.syscom.beans`). Cette couche réalise le mapping entre les objets Java et les tables de la BDD grâce aux annotations JPA (Java Persistence API)
 
-    - Le versionning des scripts SQL : le versionning des scripts SQL est géré par le framework [flywaydb](https://flywaydb.org "link to flyway").
+  - Le versionning des scripts SQL : le versionning des scripts SQL est géré par le framework [flywaydb](https://flywaydb.org "link to flyway").
 
 
-  3. `ms-message-dev-env` 
+  3. `ms-message-dev-env`
 
 Pour démarrer rapidement le projet localement, nous utilisons [Docker-compose](https://docs.docker.com/compose/ "link to Docker-compose").
 Le fichier `docker-compose.yml` contient la configuration pour démarrer les bases de données.
 
-Par ailleurs, ce module contient un fichier `postegresql/Dockerfile` qui, à partir  de l'image officielle de PostgreSQL, crée 2 bases de données (1 bdd pour le dev 
+Par ailleurs, ce module contient un fichier `postegresql/Dockerfile` qui permet de créer une image personnalisée de PostgreSQL. À partir  de l'image officielle de PostgreSQL, elle crée 2 bases de données (1 bdd pour le dev 
 et 1 bdd pour les tests). Pour plus de détails, consulter le fichier README.md.
-    
-     
+
+
   4. Build de l'image Docker de l'API
 
 Pour générer l'mage Docker de l'API, nous utilisons le plugin [Google JIB (Build Java
