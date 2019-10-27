@@ -52,8 +52,6 @@ nécessaires au déroulement des tests d'intégration. Par exemple, ce fichier c
   spring.datasource.username: ms_message_tests
   spring.datasource.password: ms_message_tests
   spring.datasource.maxpoolsize: 3
-  logging.level.root: INFOe module contient la configuration des bdd locales pour démarrer le projet.
-  logging.level.com.zaxxer: INFO
   token.jwt.duration: 600
   token.jwt.secret: 4pE8z3PBoHjnV1AhvGk+e8h2p+ShZpOnpr8cwHmMh1w=
   ```
@@ -88,7 +86,7 @@ import com.syscom.rest.MessageController;
 import com.syscom.service.MessageService;
 import com.syscom.service.UserService;
 
-    public class MessageControllerIntTest extends AbstractIntTest {
+public class MessageControllerIntTest extends AbstractIntTest {
 
         private static final String TITLE = "TITLE";
         private static final String CONTENT = "CONTENT";
