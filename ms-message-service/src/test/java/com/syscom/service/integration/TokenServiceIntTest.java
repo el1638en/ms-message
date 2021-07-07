@@ -1,5 +1,6 @@
 package com.syscom.service.integration;
 
+import static com.syscom.enums.EnumRole.USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -64,7 +65,7 @@ public class TokenServiceIntTest extends AbstractTest {
 		user.setFirstName("firstName");
 		user.setMail(mail);
 		user.setPassword("password");
-		user.setRole(roleRepository.findByCode("USERS"));
+		user.setRole(roleRepository.findByCode(USERS.name()));
 		userService.create(user);
 
 		// WHEN

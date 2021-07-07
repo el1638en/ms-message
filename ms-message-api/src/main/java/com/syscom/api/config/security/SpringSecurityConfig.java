@@ -20,10 +20,10 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SpringSecurityConfig {
-	
+
 	/**
-	 * Configuration de sécurité de l'API Rest secured dont l'acces est securisé
-	 * par Token
+	 * Configuration de sécurité de l'API Rest secured dont l'acces est securisé par
+	 * Token
 	 */
 	@Configuration
 	@Order(1)
@@ -34,6 +34,7 @@ public class SpringSecurityConfig {
 
 		@Bean
 		public AuthenticationProvider authenticationProvider() {
+//			return new TokenAuthenticationProvider();
 			return tokenAuthenticationProvider;
 		}
 
@@ -71,8 +72,7 @@ public class SpringSecurityConfig {
 	}
 
 	/**
-	 * Configuration de sécurité de l'authentification à l'api par la méthode
-	 * BASIC
+	 * Configuration de sécurité de l'authentification à l'api par la méthode BASIC
 	 */
 	@Configuration
 	public static class BasicSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -83,6 +83,7 @@ public class SpringSecurityConfig {
 		@Bean
 		public DaoAuthenticationProvider daoAuthenticationProvider() {
 			final DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+//			daoAuthenticationProvider.setUserDetailsService(new AuthUserDetailsService());
 			daoAuthenticationProvider.setUserDetailsService(userDetailsService);
 			daoAuthenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder());
 			return daoAuthenticationProvider;

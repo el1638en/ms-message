@@ -1,11 +1,13 @@
 ---
+
 logging.level.com.syscom: INFO
 logging.pattern.console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 logging.pattern.file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 management.endpoints.web.base-path: /manage
-management.security.enabled: false
+management.security.enabled: true
 server.port: 8080
 spring.application.name: ms-message
+# cette ligne permet d'exclure la configuration de sécurité par défaut de Springboot. Ainsi, on redéfinira la configuration selon notre convenance.
 spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 spring.jackson.serialization.write-dates-as-timestamps: false
 spring.datasource.driver-class-name: com.p6spy.engine.spy.P6SpyDriver

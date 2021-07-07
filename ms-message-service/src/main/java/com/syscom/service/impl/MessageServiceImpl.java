@@ -24,6 +24,7 @@ import com.syscom.beans.User;
 import com.syscom.exceptions.BusinessException;
 import com.syscom.repository.MessageRepository;
 import com.syscom.service.MessageService;
+import com.syscom.service.ResourceBundleService;
 
 /**
  * Implementation du contrat d'interface des services métiers des messages
@@ -36,9 +37,12 @@ public class MessageServiceImpl implements MessageService {
 	@Autowired
 	private MessageRepository messageRepository;
 
+	@Autowired
+	private ResourceBundleService resourceBundleService;
+
 	@Override
 	public Message create(Message message) throws BusinessException {
-		Assert.notNull(message, "Message must not be null");
+		Assert.notNull(message, resourceBundleService.getMessage("message.not.null"));
 		List<String> errors = validateMessage(message);
 		if (!errors.isEmpty()) {
 			throw new BusinessException(StringUtils.join(errors, ". "));
@@ -48,7 +52,7 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public Message findById(Long id) {
-		Assert.notNull(id, "Message id must not be null");
+		Assert.notNull(id, resourceBundleService.getMessage("message.id.not.null"));
 		Optional<Message> optionalMessage = messageRepository.findById(id);
 		return optionalMessage.isPresent() ? optionalMessage.get() : null;
 	}
@@ -60,8 +64,11 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public Message update(Long id, Message message) throws BusinessException {
-		Assert.notNull(id, "Message id must not be null");
-		Assert.notNull(id, "Message must not be null");
+		Assert.notNull(id, resourceBundleService.getMessage("message.id.not.null"));
+		List<String> errors = validateMessage(message);
+		if (!errors.isEmpty()) {
+			throw new BusinessException(StringUtils.join(errors, ". "));
+		}
 		Message findMessage = findById(id);
 		if (findMessage == null) {
 			throw new BusinessException("Unknown message");
@@ -76,9 +83,9 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public void delete(Long id) throws BusinessException {
-		Assert.notNull(id, "Message id must not be null");
+		Assert.notNull(id, resourceBundleService.getMessage("message.id.not.null"));
 		if (!messageRepository.existsById(id)) {
-			throw new BusinessException("Unknown message");
+			throw new BusinessException(resourceBundleService.getMessage("message.unknown.error"));
 		}
 		messageRepository.deleteById(id);
 	}

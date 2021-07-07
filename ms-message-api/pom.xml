@@ -50,11 +50,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-
 	</dependencies>
 
 
@@ -67,14 +65,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<executable>true</executable>
+				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.mapstruct</groupId>
@@ -94,8 +95,34 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
+				<version>${maven-release-plugin.version}</version>
 			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>${jib-maven-plugin.version}</version>
+				<configuration>
+					<from>
+						<image>openjdk:8-jdk-alpine</image>
+					</from>
+					<!-- TODO : indiquer ici l'adresse du repo Nexus -->
+					<!-- <to> <image>${repo.nexus.adresse}</image> <tags> <tag>${project.artifactId}-${project.version}</tag> 
+						</tags> </to> -->
+					<container>
+						<args>
+							<arg>-Djava.security.egd=file:/dev/./urandom</arg>
+							<arg>-jar</arg>
+						</args>
+						<ports>
+							<port>8080</port>
+						</ports>
+					</container>
+				</configuration>
+
+			</plugin>
+
+
 		</plugins>
 	</build>
 </project>

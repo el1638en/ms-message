@@ -20,8 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.syscom.beans.User;
+import com.syscom.enums.EnumRole;
 import com.syscom.exceptions.BusinessException;
+import com.syscom.repository.RoleRepository;
 import com.syscom.repository.UserRepository;
+import com.syscom.service.ResourceBundleService;
 import com.syscom.service.UserService;
 
 /**
@@ -33,10 +36,16 @@ import com.syscom.service.UserService;
 public class UserServiceImpl implements UserService {
 
 	private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-	private static ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+	private final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+
+	@Autowired
+	private ResourceBundleService resourceBundleService;
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private RoleRepository roleRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -44,17 +53,18 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void create(User user) throws BusinessException {
 		logger.info("Create new user {}", user);
-		Assert.notNull(user, "User must not be null");
+		Assert.notNull(user, resourceBundleService.getMessage("user.not.null"));
 		List<String> errors = validateUser(user);
 		if (!errors.isEmpty()) {
 			throw new BusinessException(StringUtils.join(errors, ". "));
 		}
 
 		if (userRepository.findOptionalByMail(user.getMail()).isPresent()) {
-			throw new BusinessException("Mail already used.");
+			throw new BusinessException(resourceBundleService.getMessage("user.mail.already.used"));
 		}
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		user = userRepository.save(user);
+		user.setRole(roleRepository.findByCode(EnumRole.USERS.name()));
+		userRepository.save(user);
 	}
 
 	/**
@@ -64,8 +74,6 @@ public class UserServiceImpl implements UserService {
 	 * @return Liste de message d'erreurs
 	 */
 	private List<String> validateUser(User user) {
-//		ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-//		Validator validator = validatorFactory.getValidator();
 		Set<ConstraintViolation<User>> constraintViolations = validatorFactory.getValidator().validate(user);
 		if (CollectionUtils.isNotEmpty(constraintViolations)) {
 			return constraintViolations.stream()

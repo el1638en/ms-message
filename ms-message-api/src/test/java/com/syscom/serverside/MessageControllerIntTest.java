@@ -1,5 +1,8 @@
 package com.syscom.serverside;
 
+import static com.syscom.TestUtil.APPLICATION_JSON_UTF8;
+import static com.syscom.TestUtil.convertObjectToJsonBytes;
+import static com.syscom.enums.EnumRole.USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.syscom.TestUtil;
 import com.syscom.beans.Message;
 import com.syscom.beans.Role;
 import com.syscom.beans.User;
@@ -41,11 +43,11 @@ public class MessageControllerIntTest extends AbstractIntTest {
 	private User user;
 
 	@Before
-	public void setup() {
-		Role role = roleRepository.findByCode("USERS");
+	public void setup() throws Exception {
+		Role role = roleRepository.findByCode(USERS.name());
 		user = User.builder().mail(MAIL).password(PASSWORD).name(NAME).firstName(FIRST_NAME).birthDay(BIRTH_DAY)
 				.role(role).build();
-
+		userService.create(user);
 	}
 
 	@Test
@@ -57,8 +59,8 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// WHEN
 
 		// THEN
-		mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH).contentType(TestUtil.APPLICATION_JSON_UTF8)
-				.content(TestUtil.convertObjectToJsonBytes(messageDTO))).andExpect(status().isUnauthorized());
+		mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH).contentType(APPLICATION_JSON_UTF8)
+				.content(convertObjectToJsonBytes(messageDTO))).andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -72,14 +74,13 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// THEN
 		mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer wrongTokendcqscsqcqsvsdvsdfv")
-				.contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(messageDTO)))
+				.contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	public void testCreateWrongMessage() throws Exception {
 		// GIVEN
-		userService.create(user);
 		MessageDTO messageDTO = new MessageDTO();
 
 		// WHEN
@@ -87,14 +88,13 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// THEN
 		mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
-				.contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(messageDTO)))
+				.contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
 				.andExpect(status().isBadRequest());
 	}
 
 	@Test
-	public void testCreateMessage() throws Exception {
+	public void messageServicetestCreateMessage() throws Exception {
 		// GIVEN
-		userService.create(user);
 		MessageDTO messageDTO = MessageDTO.builder().title(TITLE).content(CONTENT).beginDate(BEGIN_DATE)
 				.endDate(END_DATE).build();
 
@@ -103,14 +103,13 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// THEN
 		mockMvc.perform(MockMvcRequestBuilders.post(MessageController.PATH)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
-				.contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(messageDTO)))
+				.contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
 				.andExpect(status().isOk());
 	}
 
 	@Test
 	public void testFindAllMessages() throws Exception {
 		// GIVEN
-		userService.create(user);
 		messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
 
 		// WHEN
@@ -125,7 +124,6 @@ public class MessageControllerIntTest extends AbstractIntTest {
 	@Test
 	public void testFindMessageById() throws Exception {
 		// GIVEN
-		userService.create(user);
 		Message message = messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
 
 		// WHEN
@@ -140,7 +138,6 @@ public class MessageControllerIntTest extends AbstractIntTest {
 	@Test
 	public void testUpdateMessage() throws Exception {
 		// GIVEN
-		userService.create(user);
 		Message message = messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
 
 		MessageDTO messageDTO = MessageDTO.builder().title("NEW_TITLE").content("NEW_CONTENT").beginDate(BEGIN_DATE)
@@ -151,7 +148,7 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// THEN
 		mockMvc.perform(MockMvcRequestBuilders.put(MessageController.PATH + "/" + message.getId())
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
-				.contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(messageDTO)))
+				.contentType(APPLICATION_JSON_UTF8).content(convertObjectToJsonBytes(messageDTO)))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.title").value("NEW_TITLE"))
 				.andExpect(jsonPath("$.content").value("NEW_CONTENT"));
 	}
@@ -159,7 +156,6 @@ public class MessageControllerIntTest extends AbstractIntTest {
 	@Test
 	public void testDeleteMessage() throws Exception {
 		// GIVEN
-		userService.create(user);
 		Message message = messageService.create(new Message(null, TITLE, CONTENT, BEGIN_DATE, END_DATE));
 
 		// WHEN
@@ -167,8 +163,9 @@ public class MessageControllerIntTest extends AbstractIntTest {
 		// THEN
 		mockMvc.perform(MockMvcRequestBuilders.delete(MessageController.PATH + "/" + message.getId())
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken(MAIL, PASSWORD))
-				.contentType(TestUtil.APPLICATION_JSON_UTF8)).andExpect(status().isOk());
+				.contentType(APPLICATION_JSON_UTF8)).andExpect(status().isOk());
 
 		assertThat(messageService.findAll().size()).isEqualTo(0);
 	}
+
 }

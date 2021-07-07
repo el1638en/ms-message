@@ -45,6 +45,7 @@ public class MessageController {
 	public void create(@RequestBody MessageDTO messageDTO) throws BusinessException {
 		logger.info("Create new message : {}", messageDTO);
 		messageService.create(messageMapper.dtoToBean(messageDTO));
+		logger.info("message : {} has been created successfully.", messageDTO);
 	}
 
 	/**
@@ -96,5 +97,6 @@ public class MessageController {
 	public void delete(@PathVariable("id") Long id) throws BusinessException {
 		logger.info("Delete message identified by id {}.", id);
 		messageService.delete(id);
+		logger.info("message identified by ID {} has been deleted successfully.", id);
 	}
 }
