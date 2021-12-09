@@ -50,7 +50,7 @@
 		<jjwt.version>0.9.1</jjwt.version>
 		<spring-security-jwt.version>1.0.6.RELEASE</spring-security-jwt.version>
 		<mapstruct.version>1.3.0.Final</mapstruct.version>
-		<jackson-databind.version>2.9.8</jackson-databind.version>
+		<jackson-databind.version>2.9.10.8</jackson-databind.version>
 		<p6spy.version>3.8.1</p6spy.version>
 		<m2e.apt.activation>jdt_apt</m2e.apt.activation>
 		<commons-collections4.version>4.4</commons-collections4.version>
